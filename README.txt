@@ -1,14 +1,21 @@
-GATEWAY CONSTRUCTION SERVICES INC. WEBSITE PROTOTYPE
+GATEWAY CONSTRUCTION SERVICES INC. WEBSITE — NETLIFY FORMS UPDATE
 
 Files:
-- index.html: responsive bilingual company website and job listing
-- styles.css: visual styling and mobile layout
-- script.js: language toggle, mobile navigation and demo form messages
-- admin.html: staff portal design preview
-- assets/gateway-logo.jpeg: supplied company logo
+- index.html: bilingual website with Netlify-enabled job application form.
+- success.html: confirmation page after successful form submission.
+- styles.css, script.js, assets/: website styling, scripts, and images.
+- admin.html: preview only; it is not protected and must not be used for real applicant records.
 
-IMPORTANT FUNCTIONALITY NOTES:
-The application form does not transmit or save personal information. The application status form does not look up real records. The staff portal is not protected by authentication. Before using this website with real applicants, connect a secure backend/database, implement staff authentication and role-based access, configure privacy notice/consent, and test all forms. Contact buttons and email links are active. WhatsApp link opens a chat with the supplied Mexico number if that number has WhatsApp enabled.
+DEPLOYMENT:
+1. Upload the contents of this ZIP to your Netlify site using Deploy manually / Netlify Drop, or update the connected repository.
+2. In Netlify, open Forms and make sure form detection is enabled.
+3. The form is named "job-application". Keep the existing email notification enabled for new form submissions.
+4. After deployment, verify that "job-application" appears under Forms and submit one clearly marked test application with a test CV before accepting real applications.
 
-PUBLISHING:
-Upload the contents of this folder to a static hosting provider such as Netlify. The current site uses remote Unsplash images, so an internet connection is needed for those photos. Replace them with approved company photos if preferred. A custom domain is optional and purchased separately.
+IMPORTANT PRIVACY / SECURITY:
+- This form collects applicant contact details and a CV. Do not advertise it or collect real applicants until a test confirms that submissions and file attachments are received securely.
+- Limit access to the Netlify site and form submissions to authorized staff. Treat uploaded CVs as confidential personal data.
+- CV uploads are limited to 8 MB in the form guidance. Netlify's total request limit also applies.
+- The application status lookup is still a demo and does not retrieve real application records.
+- The admin.html page is only a visual preview, not a secure staff portal.
+- The form notification sends an alert; always verify actual submission records and file access in Netlify. Email delivery may include links/details based on Netlify notification settings.
