@@ -1,0 +1,11 @@
+import { createClient } from '@supabase/supabase-js';
+import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+export const headers={'Content-Type':'application/json','Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'Content-Type, Authorization','Access-Control-Allow-Methods':'POST, OPTIONS'};
+export function reply(status,data){return new Response(JSON.stringify(data),{status,headers});}
+export async function body(req){try{return await req.json()}catch{return {}}}
+export function db(){const url=process.env.SUPABASE_URL||process.env.VITE_SUPABASE_URL;const key=process.env.SUPABASE_SERVICE_ROLE_KEY;if(!url||!key)throw Error('Configura SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY en Netlify.');return createClient(url,key,{auth:{persistSession:false}})}
+export async function admin(req){const auth=req.headers.get('authorization')||'';const token=auth.startsWith('Bearer ')?auth.slice(7):'';if(!token)throw Error('Inicia sesión como administrador.');const url=process.env.SUPABASE_URL||process.env.VITE_SUPABASE_URL;const anon=process.env.SUPABASE_ANON_KEY||process.env.VITE_SUPABASE_ANON_KEY;const email=process.env.ADMIN_EMAIL?.toLowerCase();if(!url||!anon||!email)throw Error('Falta configurar SUPABASE_URL, SUPABASE_ANON_KEY o ADMIN_EMAIL.');const client=createClient(url,anon,{auth:{persistSession:false}});const {data,error}=await client.auth.getUser(token);if(error||!data.user||data.user.email?.toLowerCase()!==email)throw Error('Acceso no autorizado.');return data.user}
+export function makeCredentials(){return {folio:'GCS-'+new Date().getFullYear()+'-'+randomBytes(4).toString('hex').toUpperCase(),nip:randomBytes(4).toString('hex').toUpperCase()}}
+export function hashNip(nip){const salt=randomBytes(16).toString('hex');return salt+':'+scryptSync(nip,salt,64).toString('hex')}
+export function verifyNip(nip,stored){if(!stored||!stored.includes(':'))return false;const [salt,hash]=stored.split(':');const candidate=scryptSync(nip,salt,64);const expected=Buffer.from(hash,'hex');return candidate.length===expected.length&&timingSafeEqual(candidate,expected)}
+export function options(req){return req.method==='OPTIONS'?new Response(null,{status:204,headers}):null}
