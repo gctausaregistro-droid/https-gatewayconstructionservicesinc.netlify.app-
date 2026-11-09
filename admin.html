@@ -1,26 +1,57 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Panel privado | Gateway</title><link rel="stylesheet" href="styles.css">
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Administrador | Gateway Construction Services</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-.portal{max-width:1050px;margin:36px auto;padding:24px;background:#fff;border:1px solid #dce3ea;border-radius:18px;box-shadow:0 18px 45px #071f3b15}.portal h1,.portal h2{color:#071f3b}.portal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.portal input,.portal select,.portal textarea{width:100%;padding:12px;border:1px solid #d4dce5;border-radius:9px;margin:5px 0 12px}.portal label{font-weight:700;font-size:13px;color:#23384f}.portal button{border:0;border-radius:9px;padding:12px 17px;background:#d8a53b;color:#071f3b;font-weight:800;cursor:pointer}.portal .secondary{background:#071f3b;color:white}.portal .danger{background:#a42b2b;color:white}.portal .muted{color:#64748b;font-size:13px}.notice{padding:12px;border-radius:9px;margin:12px 0;background:#edf3f9}.notice.error{background:#ffeded;color:#8a1c1c}.notice.ok{background:#eaf7ee;color:#185b2b}.hidden{display:none!important}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e5eaf0;vertical-align:top}th{background:#f3f6f9;color:#071f3b}.record-actions{display:flex;gap:6px;flex-wrap:wrap}.record-actions button{padding:7px 9px;font-size:12px}.folio{font-weight:900;color:#071f3b;letter-spacing:.04em}@media(max-width:650px){.portal{margin:15px 10px;padding:16px}.portal-grid{grid-template-columns:1fr}}
-</style></head><body>
-<div class="portal">
-<a href="index.html">← Volver al sitio</a>
-<section id="loginBox"><h1>Panel privado de administración</h1><p class="muted">Acceso exclusivo para personal autorizado de Gateway Construction Services Inc.</p>
-<form id="loginForm"><label>Correo administrativo</label><input name="email" type="email" autocomplete="username" required><label>Contraseña</label><input name="password" type="password" autocomplete="current-password" required><button>Iniciar sesión</button></form><div id="loginMsg" class="notice hidden"></div></section>
-<section id="appBox" class="hidden"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><h1>Administración de candidatos</h1><p class="muted" id="who"></p></div><button class="secondary" id="logoutBtn">Cerrar sesión</button></div>
-<div class="notice">Registra al solicitante y entrega personalmente su folio y NIP. El NIP solo se muestra al momento de crearlo; no se guarda en texto visible.</div>
-<h2>Registrar candidato</h2><form id="candidateForm"><div class="portal-grid"><div><label>Nombre completo *</label><input name="nombre_completo" required maxlength="160"></div><div><label>Correo</label><input name="correo" type="email"></div><div><label>Teléfono</label><input name="telefono" maxlength="40"></div><div><label>Estatus inicial</label><select name="estatus"><option>En revisión</option><option>Documentación pendiente</option><option>Entrevista</option><option>En proceso</option><option>Aprobado</option><option>No aprobado</option></select></div></div><label>Observaciones internas</label><textarea name="observaciones" rows="3" maxlength="3000"></textarea><button>Registrar y generar folio/NIP</button></form><div id="newCredentials" class="notice hidden"></div><div id="formMsg" class="notice hidden"></div>
-<h2 style="margin-top:32px">Candidatos registrados</h2><button id="refreshBtn" class="secondary">Actualizar lista</button><div id="listMsg" class="notice hidden"></div><div class="table-wrap"><table><thead><tr><th>Folio</th><th>Nombre / contacto</th><th>Estatus</th><th>Observaciones internas</th><th>Acciones</th></tr></thead><tbody id="candidateRows"></tbody></table></div>
-</section></div>
+*{box-sizing:border-box}body{margin:0;background:#f3f6f9;color:#172536;font:15px Arial,sans-serif}
+header{background:#082746;color:white;padding:22px max(20px,calc((100% - 1080px)/2));display:flex;justify-content:space-between;align-items:center;gap:12px}
+header small{display:block;color:#d8e1ea;margin-top:5px}main{max-width:1080px;margin:30px auto;padding:0 18px}
+.panel{background:white;border:1px solid #dce3ea;border-radius:13px;padding:22px;margin-bottom:18px;box-shadow:0 8px 24px #102b4610}
+h1,h2{margin:0 0 8px}h1{font-size:24px}h2{font-size:19px}.muted{color:#667789}
+label{display:block;font-weight:bold;font-size:13px;margin:12px 0 6px}input,select,textarea{width:100%;padding:12px;border:1px solid #cbd5df;border-radius:8px;font:inherit;background:white}textarea{min-height:80px}
+button{border:0;border-radius:8px;padding:12px 17px;background:#082746;color:white;font-weight:bold;cursor:pointer}.secondary{background:#e9eef3;color:#082746}.gold{background:#c9a45c;color:#172536}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.actions{display:flex;gap:10px;margin-top:15px;flex-wrap:wrap}
+.notice{margin-top:14px;padding:12px;border-radius:8px;background:#eef3f7;white-space:pre-wrap}.error{background:#fff0ef;color:#9a271f}.success{background:#edf8f0;color:#176b36}
+table{width:100%;border-collapse:collapse;margin-top:14px}th,td{text-align:left;padding:10px;border-bottom:1px solid #dce3ea}th{font-size:12px;color:#667789;text-transform:uppercase}.tablewrap{overflow:auto}.hidden{display:none}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.panel{padding:17px}}
+</style></head>
+<body>
+<header><div><b>GATEWAY CONSTRUCTION SERVICES, INC.</b><small>Portal privado de administración</small></div><button id="logout" class="secondary hidden">Cerrar sesión</button></header>
+<main>
+<section id="login" class="panel" style="max-width:460px;margin:48px auto">
+<h1>Acceso administrador</h1><p class="muted">Ingresa con el correo y contraseña del administrador.</p>
+<form id="loginForm"><label>Correo electrónico</label><input id="email" type="email" autocomplete="username" required>
+<label>Contraseña</label><input id="password" type="password" autocomplete="current-password" required>
+<div class="actions"><button type="submit">Iniciar sesión</button></div></form><div id="loginMsg" class="notice hidden"></div>
+</section>
+<section id="app" class="hidden">
+<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><h1>Panel de candidatos</h1><p class="muted">Consulta los registros y actualiza su seguimiento.</p></div><button id="refresh" class="secondary">Actualizar lista</button></div>
+<div id="appMsg" class="notice hidden"></div><div class="tablewrap"><table><thead><tr><th>Folio</th><th>Nombre</th><th>Teléfono</th><th>Correo</th><th>Estatus</th></tr></thead><tbody id="rows"><tr><td colspan="5">Sin consultar</td></tr></tbody></table></div></div>
+<div class="panel"><h2>Registrar candidato manualmente</h2><form id="newForm"><div class="grid">
+<div><label>Nombre completo</label><input name="full_name" required></div><div><label>Teléfono</label><input name="phone" required></div>
+<div><label>Correo electrónico</label><input name="email" type="email"></div><div><label>Puesto solicitado</label><input name="position"></div></div>
+<label>Observaciones</label><textarea name="notes"></textarea><div class="actions"><button class="gold">Registrar candidato</button></div></form><div id="newMsg" class="notice hidden"></div></div>
+<div class="panel"><h2>Actualizar candidato</h2><form id="updateForm"><label>Folio</label><input name="folio" required>
+<div class="grid"><div><label>Estatus</label><select name="status"><option>En revisión</option><option>Contactado</option><option>Entrevista programada</option><option>Documentación pendiente</option><option>En proceso</option><option>Aprobado</option><option>No seleccionado</option></select></div>
+<div><label>Observaciones</label><textarea name="notes"></textarea></div></div><div class="actions"><button>Guardar cambios</button></div></form><div id="updateMsg" class="notice hidden"></div></div>
+</section></main>
 <script>
-let config, sb, session;
-const $=s=>document.querySelector(s);
-function message(el,text,error=false){el.textContent=text;el.className='notice'+(error?' error':'');el.classList.remove('hidden')}
-async function init(){try{const r=await fetch('/.netlify/functions/config');config=await r.json();if(!r.ok)throw Error(config.error||'No se pudo cargar la configuración');const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');sb=createClient(config.url,config.anonKey); }catch(e){message($('#loginMsg'),e.message,true)}}
-async function api(name,body){const {data}=await sb.auth.getSession();const token=data.session?.access_token;if(!token)throw Error('La sesión expiró. Inicia sesión nuevamente.');const r=await fetch('/.netlify/functions/'+name,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body||{})});const d=await r.json();if(!r.ok)throw Error(d.error||'Ocurrió un error');return d}
-$('#loginForm').addEventListener('submit',async e=>{e.preventDefault();try{const f=new FormData(e.target);const {data,error}=await sb.auth.signInWithPassword({email:f.get('email'),password:f.get('password')});if(error)throw error;session=data.session;$('#loginBox').classList.add('hidden');$('#appBox').classList.remove('hidden');$('#who').textContent='Sesión: '+data.user.email;await loadCandidates()}catch(err){message($('#loginMsg'),err.message,true)}});
-$('#logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};
-$('#candidateForm').addEventListener('submit',async e=>{e.preventDefault();$('#newCredentials').classList.add('hidden');$('#formMsg').classList.add('hidden');try{const data=Object.fromEntries(new FormData(e.target).entries());const d=await api('register-candidate',data);message($('#newCredentials'),'Candidato registrado. Folio: '+d.folio+' | NIP: '+d.nip+' — Guarda y entrega estos datos al solicitante. No se volverá a mostrar el NIP.');e.target.reset();await loadCandidates()}catch(err){message($('#formMsg'),err.message,true)}});
-async function loadCandidates(){try{const d=await api('list-candidates');const body=$('#candidateRows');body.innerHTML='';for(const c of d.candidates){const tr=document.createElement('tr');const cell=(v)=>{const td=document.createElement('td');td.textContent=v||'—';return td};tr.append(cell(c.folio));const name=cell(c.nombre_completo+'\n'+(c.correo||'')+'\n'+(c.telefono||''));name.style.whiteSpace='pre-line';tr.append(name);const status=cell(c.estatus);tr.append(status);const obs=cell(c.observaciones);tr.append(obs);const actions=document.createElement('td');const wrap=document.createElement('div');wrap.className='record-actions';const sel=document.createElement('select');['En revisión','Documentación pendiente','Entrevista','En proceso','Aprobado','No aprobado'].forEach(x=>{const o=document.createElement('option');o.textContent=x;o.value=x;o.selected=x===c.estatus;sel.append(o)});const inp=document.createElement('textarea');inp.rows=2;inp.placeholder='Observaciones internas';inp.value=c.observaciones||'';const btn=document.createElement('button');btn.textContent='Guardar';btn.onclick=async()=>{try{await api('update-candidate',{id:c.id,estatus:sel.value,observaciones:inp.value});message($('#listMsg'),'Cambios guardados.');await loadCandidates()}catch(e){message($('#listMsg'),e.message,true)}};wrap.append(sel,inp,btn);actions.append(wrap);tr.append(actions);body.append(tr)}}catch(e){message($('#listMsg'),e.message,true)}}
-$('#refreshBtn').onclick=loadCandidates;init();
+(() => {
+const SUPABASE_URL="https://thlhvzghmmbnhftarnva.supabase.co";
+const SUPABASE_ANON_KEY="PEGAR_AQUI_LA_CLAVE_ANON_PUBLICA";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const $=id=>document.getElementById(id);let token="";
+function msg(id,text,kind=""){const e=$(id);e.textContent=text;e.className="notice"+(kind?" "+kind:"");}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+async function api(name,method="GET",body){const r=await fetch("/.netlify/functions/"+name,{method,headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},...(body?{body:JSON.stringify(body)}:{})});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||d.message||"Error "+r.status);return d;}
+async function load(){try{const d=await api("list-candidates");const a=Array.isArray(d)?d:(d.candidates||d.data||[]);$("rows").innerHTML=a.length?a.map(c=>`<tr><td><button class="secondary pick" data-f="${esc(c.folio)}">${esc(c.folio)}</button></td><td>${esc(c.full_name||c.name)}</td><td>${esc(c.phone)}</td><td>${esc(c.email)}</td><td>${esc(c.status)}</td></tr>`).join(""):'<tr><td colspan="5">No hay candidatos.</td></tr>';document.querySelectorAll(".pick").forEach(b=>b.onclick=()=>{$("updateForm").elements.folio.value=b.dataset.f;$("updateForm").scrollIntoView({behavior:"smooth"});});}catch(e){msg("appMsg","No se pudo cargar la lista: "+e.message,"error");}}
+$("loginForm").onsubmit=async e=>{e.preventDefault();if(SUPABASE_ANON_KEY.startsWith("PEGAR_")){msg("loginMsg","Falta colocar la clave anon pública de Supabase en este archivo.","error");return;}const {data,error}=await sb.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error){msg("loginMsg","No se pudo iniciar sesión. Revisa correo y contraseña.","error");return;}token=data.session.access_token;$("login").classList.add("hidden");$("app").classList.remove("hidden");$("logout").classList.remove("hidden");await load();};
+$("logout").onclick=async()=>{await sb.auth.signOut();token="";$("app").classList.add("hidden");$("login").classList.remove("hidden");$("logout").classList.add("hidden");};
+$("refresh").onclick=load;
+$("newForm").onsubmit=async e=>{e.preventDefault();try{const body=Object.fromEntries(new FormData(e.currentTarget).entries());const d=await api("register-candidate","POST",body);msg("newMsg","Registro enviado. "+(d.folio?"Folio: "+d.folio:"")+(d.nip?"\nNIP: "+d.nip:""),"success");e.currentTarget.reset();await load();}catch(x){msg("newMsg","No se pudo registrar: "+x.message,"error");}};
+$("updateForm").onsubmit=async e=>{e.preventDefault();try{await api("update-candidate","POST",Object.fromEntries(new FormData(e.currentTarget).entries()));msg("updateMsg","Cambios guardados.","success");await load();}catch(x){msg("updateMsg","No se pudo actualizar: "+x.message,"error");}};
+})();
 </script></body></html>
